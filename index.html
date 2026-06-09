@@ -202,7 +202,7 @@
 
   .msg { display: flex; gap: 9px; align-items: flex-end; max-width: 84%; }
   .msg.user { align-self: flex-end; flex-direction: row-reverse; }
-  .msg.assistant { align-self: flex-start; }
+  .msg.assistant { align-self: flex-start; max-width: 92%; }
 
   .msg-avatar {
     width: 28px; height: 28px; border-radius: 50%;
@@ -319,6 +319,47 @@
     font-size: 10.5px; color: #aab0c0;
     margin-top: 8px; text-align: center; line-height: 1.5;
   }
+
+  /* ── Markdown 渲染（助手气泡内）────────────────────── */
+  .msg-bubble h1, .msg-bubble h2, .msg-bubble h3,
+  .msg-bubble h4, .msg-bubble h5, .msg-bubble h6 {
+    font-size: 14.5px; font-weight: 700; color: #14264a;
+    margin: 12px 0 6px; line-height: 1.4;
+  }
+  .msg-bubble h1:first-child, .msg-bubble h2:first-child,
+  .msg-bubble h3:first-child { margin-top: 0; }
+  .msg-bubble p { margin: 6px 0; }
+  .msg-bubble p:first-child { margin-top: 0; }
+  .msg-bubble p:last-child  { margin-bottom: 0; }
+  .msg-bubble strong { font-weight: 700; color: #14264a; }
+  .msg-bubble em { font-style: italic; }
+  .msg-bubble code {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+    font-size: 12.5px; background: #eef2f8; color: #1a3a6b;
+    padding: 1px 5px; border-radius: 5px;
+  }
+  .msg-bubble ul, .msg-bubble ol { margin: 6px 0; padding-left: 20px; }
+  .msg-bubble li { margin: 3px 0; line-height: 1.6; }
+  .msg-bubble hr { border: none; border-top: 1px solid #e6ebf3; margin: 10px 0; }
+
+  /* 表格：可横向滚动，院校列突出 */
+  .md-table-wrap { overflow-x: auto; margin: 9px 0; -webkit-overflow-scrolling: touch; }
+  .msg-bubble table {
+    border-collapse: collapse; width: 100%;
+    font-size: 12.5px; line-height: 1.5; min-width: 380px;
+  }
+  .msg-bubble th, .msg-bubble td {
+    border: 1px solid #e3e9f3; padding: 6px 9px;
+    text-align: left; vertical-align: top;
+  }
+  .msg-bubble td { white-space: normal; }
+  .msg-bubble thead th {
+    background: #eef4ff; color: #1a3a6b; font-weight: 600; white-space: nowrap;
+  }
+  .msg-bubble tbody tr:nth-child(even) { background: #fafbfd; }
+  /* 第 1 列“梯队”窄一些，第 2 列“院校”加粗高亮、不换行，一眼能看到学校 */
+  .msg-bubble td:first-child { white-space: nowrap; text-align: center; }
+  .msg-bubble td:nth-child(2) { font-weight: 700; color: #14264a; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -329,7 +370,7 @@
     <div class="header-icon">考</div>
     <div class="header-info">
       <div class="header-title">高考志愿顾问</div>
-      <div class="header-sub">通义千问驱动 · 可联网查最新录取数据</div>
+      <div class="header-sub">通义千问驱动 · 位次/分数以夸克高考为参照</div>
     </div>
     <button class="reset-btn" id="resetBtn">重置对话</button>
   </div>
@@ -410,7 +451,7 @@
           </svg>
         </button>
       </div>
-      <div class="disclaimer">分数线、位次、招生计划等以省考试院 / 阳光高考平台 / 各校本科招生网为准</div>
+      <div class="disclaimer">往年位次/分数以夸克高考为参照，分数线、招生计划最终以省考试院 / 阳光高考 / 各校招生网为准</div>
     </div>
   </div>
 </div>
@@ -418,13 +459,14 @@
 <script>
 // ── 槽位定义 ──────────────────────────────────────────
 const SLOTS_DEF = [
-  { key: 'province',   label: '省份' },
-  { key: 'score_rank', label: '分数/位次' },
-  { key: 'subject',    label: '选科' },
-  { key: 'interest',   label: '专业偏好' },
-  { key: 'region',     label: '地域偏好' },
-  { key: 'family',     label: '家庭资源' },
-  { key: 'goal',       label: '核心诉求' },
+  { key: 'province',    label: '省份' },
+  { key: 'gaokao_year', label: '高考年份' },
+  { key: 'score_rank',  label: '分数/位次' },
+  { key: 'subject',     label: '选科' },
+  { key: 'interest',    label: '专业偏好' },
+  { key: 'region',      label: '地域偏好' },
+  { key: 'family',      label: '家庭资源' },
+  { key: 'goal',        label: '核心诉求' },
 ];
 
 let slots = {};
@@ -435,6 +477,8 @@ let history = [];   // [{role, content}, ...]
 let loading = false;
 
 const ENDPOINT = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+// 联网搜索锚定的权威站点：夸克高考（往年位次/分数以此为准，过滤自媒体/论坛等被污染来源）
+const SEARCH_SITES = ['gaokao.quark.cn'];
 
 // ── DOM 引用 ──────────────────────────────────────────
 const keyScreen   = document.getElementById('keyScreen');
@@ -472,6 +516,16 @@ function extractSlots(msg) {
   ];
   for (const p of provinces) {
     if (msg.includes(p) && !slots.province.filled) { slots.province = { filled: true, value: p }; }
+  }
+
+  // 高考年份（用于把参照数据锁定到“高考当年的前一年”）
+  const yearM = msg.match(/(20[12]\d)\s*年?\s*(?:高考|考生|届|应届|入学)/)
+             || msg.match(/(?:我是|考生是?|高考)\s*(20[12]\d)/)
+             || msg.match(/(20[12]\d)\s*届/);
+  if (yearM && !slots.gaokao_year.filled) {
+    slots.gaokao_year = { filled: true, value: yearM[1] + '年' };
+  } else if (!slots.gaokao_year.filled && /今年高考|今年的?考生|今年参加高考/.test(msg)) {
+    slots.gaokao_year = { filled: true, value: '2026年' };
   }
 
   // 分数 / 位次 / 分差
@@ -532,44 +586,47 @@ function extractSlots(msg) {
 // ── 系统 prompt ───────────────────────────────────────
 const BASE_SYSTEM = `你是一名经验丰富、说话直爽、接地气的高考志愿填报顾问。你像一个懂行的朋友，帮考生和家长把志愿想清楚，而不是甩官话套话。
 
+【数据来源：以夸克高考为准，严防信息污染】
+- 涉及往年录取位次、分数、招生计划、专业组/试验班设置时，一律以"夸克高考"（gaokao.quark.cn）的数据为准。联网搜索时优先在该站点内核对，搜索词带上"夸克高考"。
+- 严防信息污染：自媒体公众号、贴吧论坛、培训机构软文、问答平台、各类"志愿规划"营销文里的位次/分数/试验班名称经常是错的甚至编的，一律不采信。只要和夸克高考对不上，就以夸克高考为准；夸克高考查不到的，宁可说"查不到、请去官方核对"，也绝不拿来路不明的数字硬填。
+- 没把握的院校代码、专业组名称、招生口径，宁缺毋滥，绝不为了显得"具体"而编造班名、代码或位次。
+
+【年份：参照数据锚定"高考当年的前一年"】
+- 先确认考生是哪一年高考。参照录取数据默认用"高考年份的前一年"——比如考生是 2025 年高考，就用 2024 年的录取位次做主参照，绝不能用 2023 年或更早的数据当主依据。
+- 因为填报时当年录取结果还没出，最近一届完整数据就是前一年。可以再往前补 1—2 年看趋势，但摆出来对比的主参照必须是前一年。
+- 报任何位次都写清是哪一年的数据；还不知道考生高考年份时，先问清楚再做位次对比。
+
 【填报常识】
-- 位次比分数更可靠：一年的分数线随题目难度浮动，省排名（位次）才是稳定参照。优先用位次，其次才看分数、分差（分数减去一本线/特殊类型控制线）。报参照位次时说明是哪一年的数据（一般用去年的，今年的还没出）。
-- 建议按"冲、稳、保"三档展开，每档给 2-3 个具体的报考选择，不要只报校名。
-- 现在很多顶尖高校按"专业大类 / 试验班 / 院校专业组"招生，不是按单一专业，比如"工科试验班""理科试验班"等，里面含若干专业、入学后再分流。新高考省份（如重庆、浙江、上海）按"院校专业组"投档，每个专业组有独立的录取位次。所以同一所学校不同的试验班/专业组，录取位次能差很远，必须分开谈，不能用"全校大概多少位"糊弄。
-- 冲/稳/保按位次对齐：拿用户的位次和"目标专业组去年的录取位次"比——去年位次比用户略靠前（数字略小）、踮脚能够到的算"冲"；大致相当的算"稳"；明显比用户靠后（数字大不少）、很有把握的算"保"。如果某校或专业组去年的录取位次比用户好很多（数字小很多），那是基本够不着，绝不能当成"能上的更高平台"列进来——名气再大也不行。差几名到几百名可以算冲，差一两千名就不是冲了，是够不着。
-- 别被特殊批次的低分误导：招生表里一所学校"最低位次"那一行，往往是国家专项、高校专项、民族班、中外合作或偏远校区，要么需要专项/民族资格，要么学费很高。判断够不够，默认看"普通批 / 普通类"的录取位次；只有用户明确说自己符合专项或民族资格时，才把那些特殊批次算进来，并把所需条件和代价（如中外合作学费高）讲清楚。
+- 位次比分数更可靠：分数线随题目难度浮动，省排名（位次）才是稳定参照。优先用位次，其次看分数、分差（分数减去一本线/特殊类型控制线）。
+- 按"冲、稳、保"三档展开，每档给 2—3 个具体选择，落到院校 + 招生专业组/试验班，不要只报校名。
+- 很多顶尖高校按"专业大类 / 试验班 / 院校专业组"招生（如"工科试验班""理科试验班"），里面含若干专业、入学后再分流；新高考省份（如重庆、浙江、上海）按"院校专业组"投档，每个组有独立录取位次。所以同一所学校不同试验班/专业组，位次能差很远，必须分开谈，不能用"全校大概多少位"糊弄。
+- 冲/稳/保按位次对齐：用考生位次和"目标专业组前一年的录取位次"比——比考生略靠前（数字略小）、踮脚够得到的算"冲"；大致相当算"稳"；明显靠后（数字大不少）、很有把握的算"保"。某校/专业组前一年位次比考生好很多（数字小很多）的，是基本够不着，绝不能当"能上的更高平台"列进来，名气再大也不行。差几名到几百名可以算冲，差一两千名就是够不着。
+- 别被特殊批次的低分误导：招生表里"最低位次"那行常是国家专项、高校专项、民族班、中外合作或偏远校区，要么需要资格、要么学费很高。默认看"普通批 / 普通类"的录取位次；只有考生明确符合专项/民族资格时才纳入，并把条件和代价（如中外合作学费高）讲清楚。
 
-【最重要的推荐策略：地域是偏好，不是硬门槛】
-把用户给的地域（如上海、杭州）当成"优先考虑"，绝不要当成"只能在这里挑"。按三步走：
+【最重要的推荐顺序：先看位次能上哪，再回到心仪地域】
+地域是"优先考虑"，绝不是"只能在这里挑"。务必按这个顺序讲：
 
-第一步——先在用户心仪的城市里，按真实分数/位次给现实方案。够得着什么层次就推什么，够不着的要直说，别给不切实际的安慰。
-  例：偏好上海杭州、分数大概只够同济的好专业时，就老实讲——同济的优势专业是现实目标；复旦、上交、浙大的热门专业大概率够不着，只剩冷门专业或中外合作可以冲，要不要冲让用户自己定。
+第一步——先不限地域，按位次给定位。用考生位次（参照前一年数据）说清"这个位次大致能上哪些层次的学校、哪些方向的专业组"，给几个真能录取的代表性选择（含冲/稳/保），让考生先有个现实的盘子。别只盯 985 牌子，综合 985、211、双一流，以及"虽非顶尖名校但目标专业很强"的行业特色校——电子信息看两电一邮（电子科大、西电、北邮），电力看华电、上电，财经看两财一贸，法学看五院四系，工科还有南理工、南航、哈工程、西工大、华东理工等，按位次和方向匹配，别硬凑名气。
 
-第二步——主动跳出心仪城市，给"同样的位次，去别的城市能上的、性价比更高的选择"。关键是推"用户这个位次真能录取"的学校，不是单纯名气大的学校：先核实目标校在用户省份的普通批录取位次，确认够得着（算冲/稳/保哪档）再推；够不着的名校别拿来当"能上的更高平台"。
-  不要只盯 985 的牌子。按用户位次能落到的层次和想学方向来挑，综合考虑 985、211、双一流，以及"虽非顶尖名校但目标专业很强"的行业特色校——比如电子信息看两电一邮（电子科大、西电、北邮），电力看华电、上电，财经看两财一贸，法学看五院四系，工科还有南理工、南航、哈工程、西工大、武理工、华东理工等。具体推哪些，匹配位次和兴趣，别硬凑名气。
+第二步——再把镜头收回到考生心仪的城市/地域，看这里面有哪些够得着的学校和专业组：哪些是稳/保、哪些只能冲、哪些（够不着的名校）现实里上不了，要直说，别给不切实际的安慰。如果心仪城市里好学校好专业够不着，就老实讲——比如偏好上海杭州、位次大概只够同济的好专业时，就说同济的优势专业是现实目标，复旦、上交、浙大的热门专业大概率够不着；并提示"同样的位次去别的城市能上更好的平台或更强的专业"。
 
-第三步——把取舍讲明白，让用户自己拍板：留在心仪城市（城市优先，可能牺牲学校层次或专业）／冲更高层次的学校（学校优先，可能要去外地，而且大概率只够它的边缘冷门专业）／保住好专业（专业优先，可能学校名气没那么响）。尤其要点出"名校的边缘专业 vs 实力校的王牌专业"这个最常见的纠结，给出你的分析，但不替他做决定。
+第三步——把取舍摊开，让考生自己拍板：留在心仪城市（可能牺牲学校层次或专业）／冲更高层次的学校（可能要去外地，且大概率只够边缘冷门专业）／保住好专业（学校名气可能没那么响）。尤其点出"名校的边缘专业 vs 实力校的王牌专业"这个最常见的纠结，给出你的分析，但不替他做决定。
 
-【推荐要具体：落到招生专业组 / 试验班，别停在"大方向"】
-用户要的是能照着填的颗粒度，不是"同济的优势专业是土木、交通"这种泛泛而谈。每给一所学校，尽量做到：
-- 写出该校当年在用户所在省份的具体招生口径——专业大类 / 试验班 / 院校专业组的名称（例如"工科试验班（XX类）""XX 院校专业组"），并说明这个班/组里大致包含哪些专业、入学后怎么分流。
-- 给出这个具体招生单位（而不是整所学校）的参照录取位次区间，并说清数据年份。
-- 把它归到冲 / 稳 / 保哪一档，说明理由。
-- 举例：与其说"同济可以考虑土木、交通"，不如说"同济大学 工科试验班（土木与环境类）这一档，去年在重庆物理类的录取位次大约在 X 名，比你的 630 稍紧，算冲一冲；入学后可分流到土木工程、环境工程等"——具体的班名、包含专业、位次，务必先联网搜索核实后再写。
+【推荐要具体，但先在夸克高考核实】
+考生要的是能照着填的颗粒度，不是"同济的优势专业是土木、交通"这种泛泛而谈。每给一所学校，尽量写出：该校当年在考生所在省份的招生口径（专业大类 / 试验班 / 院校专业组的名称，如"工科试验班（XX类）"）、这个组大致含哪些专业、入学后怎么分流，以及这个具体招生单位（不是整所学校）的参照位次和数据年份，并归到冲/稳/保哪档、说明理由。
+- 报具体班名/专业组/位次前，先在夸克高考核实（搜"XX大学 〔高考年份减1〕 〔省份〕 招生专业 录取位次 夸克高考"），绝不凭记忆。
+- 查到就具体说；查不到或没把握，就如实讲"具体怎么分、对应位次多少，以该校今年在你省的招生计划为准，务必去官方核对"，绝不硬编班名、代码或位次来凑"具体"。
 
-但越具体越要诚实：试验班的名称、代码、包含专业、分流规则和录取位次，每年每省都不一样，也是最容易记错或编错的地方。所以——
-- 报具体班名 / 专业组 / 位次之前，先联网搜索"XX大学 2025 重庆 招生专业 试验班 录取位次"这类信息核实，绝不凭记忆报。
-- 查到了就具体说；查不到或没把握，就如实讲"具体试验班怎么分、对应位次多少，以该校今年在你省的招生计划为准，我这边不能保证，务必去官方核对"，绝不硬编班名、代码或位次来凑"具体"。
-
-【用最新数据时】
-- 涉及最近一年的录取分数线、位次、招生计划、具体试验班 / 专业组设置、学科评估、专业就业情况时，先用联网搜索查最新公开信息再回答，不要凭记忆作答。
-- 但务必提醒：具体分数线、招生计划和专业组设置以省教育考试院（招办）官网、阳光高考平台、各校本科招生网为准，填报前一定要去官方核对。
-- 查不到或不确定的，直说"这个建议去官方渠道确认"，绝不编造分数线、位次、班名或招生政策。
+【排版：用 Markdown，让信息一眼能看清】
+- 冲/稳/保推荐用一个 Markdown 表格给出，列固定为：梯队 | 院校 | 专业组/试验班 | 参照位次(年份) | 点评。院校名用 **加粗**，让人第一眼就看到是哪所大学。
+- "梯队"列只填 冲 / 稳 / 保（可在文字前加一个 🔴/🟡/🟢 圆点，但 emoji 只放在这一列开头，绝不在句子中间乱加）。
+- 一所学校有多个专业组就拆成多行，每行一个组。表格放不下的分流规则、取舍建议、提醒，用表格下方的正常段落补充。
+- 表格直接输出 Markdown，不要把表格套进代码块（不要用三个反引号包起来）。不要把所有内容堆成一大段，该分段就分段。
 
 【沟通方式】
-- 信息不全时自然追问缺的项（省份、分数或位次、选科、想学方向、地域偏好、家里有无相关资源、最看重什么），别像填表一样一次甩一串问题。
-- 至少知道 省份 + 分数或位次 + 大致诉求 后，再给完整的冲稳保推荐。
-- 说人话、简洁。不要用 Markdown：不要 **加粗**、不要 # 标题、不要 - 或 1. 列表符号，用自然段落和口语化表达。`;
+- 信息不全时自然追问缺的项（省份、高考年份、分数或位次、选科、想学方向、地域偏好、家里有无相关资源、最看重什么），别像填表一样一次甩一串问题。
+- 至少知道 省份 + 高考年份 + 分数或位次 + 大致诉求 后，再给完整的冲稳保推荐。
+- 说人话、简洁，分析到位但不啰嗦。`;
 
 function buildSystemMessage() {
   const lines = SLOTS_DEF.map(s =>
@@ -596,7 +653,10 @@ async function callQwenStream(userMsg, onDelta) {
   // 开启百炼自带联网搜索（OpenAI 兼容协议下作为顶层参数传入）
   if (wsToggle.checked) {
     body.enable_search = true;
-    body.search_options = { search_strategy: 'max' };
+    body.search_options = {
+      search_strategy: 'max',
+      assigned_site_list: SEARCH_SITES,   // 优先在夸克高考站内检索；若某天接口报错，删掉本行即可
+    };
   }
 
   const resp = await fetch(ENDPOINT, {
@@ -640,24 +700,97 @@ async function callQwenStream(userMsg, onDelta) {
   return full;
 }
 
-// ── 清理模型输出的 Markdown 格式 ──────────────────────
-function cleanMarkdown(text) {
-  return text
-    .replace(/\*\*(.+?)\*\*/g, '$1')        // **粗体**
-    .replace(/\*(.+?)\*/g, '$1')            // *斜体*
-    .replace(/`{1,3}([^`]*)`{1,3}/g, '$1')  // `代码`
-    .replace(/^#{1,6}\s*/gm, '')            // ### 标题
-    .replace(/^\s*[-*•]\s+/gm, '')          // - 列表
-    .replace(/^\s*\d+[\.、)]\s*/gm, '')      // 1. 有序列表
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+// ── HTML 转义 ─────────────────────────────────────────
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// ── HTML 转义 & 渲染 ──────────────────────────────────
-function escapeHtml(s) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// ── 行内 Markdown：代码 / 粗体 / 斜体（先转义再替换，防注入）──
+function mdInline(s) {
+  var t = escapeHtml(s);
+  t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+  t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  t = t.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+  return t;
 }
-function toHtml(s) { return escapeHtml(s).replace(/\n/g, '<br>'); }
+
+// ── 轻量 Markdown 渲染：表格 / 标题 / 列表 / 分隔线 / 段落 ──
+function renderMarkdown(src) {
+  var lines = String(src).replace(/\r\n?/g, '\n').split('\n');
+  var html = '', para = [], i = 0;
+  function flushPara() {
+    if (para.length) { html += '<p>' + para.map(mdInline).join('<br>') + '</p>'; para = []; }
+  }
+  function splitRow(r) {
+    return r.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (c) { return c.trim(); });
+  }
+  while (i < lines.length) {
+    var line = lines[i], trimmed = line.trim();
+
+    if (trimmed === '') { flushPara(); i++; continue; }
+
+    // 代码围栏（本场景不用代码块）——直接丢弃栏行，让里面的表格照常解析
+    if (/^```/.test(trimmed)) { flushPara(); i++; continue; }
+
+    // 分隔线 --- *** ___
+    if (/^([-*_])\1{2,}$/.test(trimmed.replace(/\s+/g, ''))) { flushPara(); html += '<hr>'; i++; continue; }
+
+    // 标题 #..######
+    var h = trimmed.match(/^(#{1,6})\s+(.*)$/);
+    if (h) { flushPara(); html += '<h3>' + mdInline(h[2]) + '</h3>'; i++; continue; }
+
+    // 表格：当前行含 | 且下一行是分隔行 |---|---|
+    if (trimmed.indexOf('|') !== -1 && i + 1 < lines.length &&
+        /^\s*\|?[\s:|-]*-[-\s:|]*\|?\s*$/.test(lines[i + 1]) && lines[i + 1].indexOf('-') !== -1) {
+      flushPara();
+      var header = splitRow(trimmed);
+      i += 2;
+      var body = [];
+      while (i < lines.length && lines[i].indexOf('|') !== -1 && lines[i].trim() !== '') {
+        body.push(splitRow(lines[i])); i++;
+      }
+      var tb = '<div class="md-table-wrap"><table><thead><tr>';
+      header.forEach(function (c) { tb += '<th>' + mdInline(c) + '</th>'; });
+      tb += '</tr></thead><tbody>';
+      body.forEach(function (r) {
+        tb += '<tr>';
+        for (var k = 0; k < header.length; k++) { tb += '<td>' + mdInline(r[k] || '') + '</td>'; }
+        tb += '</tr>';
+      });
+      tb += '</tbody></table></div>';
+      html += tb;
+      continue;
+    }
+
+    // 无序列表 - * •
+    if (/^\s*[-*•]\s+/.test(line)) {
+      flushPara();
+      var ul = [];
+      while (i < lines.length && /^\s*[-*•]\s+/.test(lines[i])) {
+        ul.push(lines[i].replace(/^\s*[-*•]\s+/, '')); i++;
+      }
+      html += '<ul>' + ul.map(function (it) { return '<li>' + mdInline(it) + '</li>'; }).join('') + '</ul>';
+      continue;
+    }
+
+    // 有序列表 1. 1、 1)
+    if (/^\s*\d+[.、)]\s+/.test(line)) {
+      flushPara();
+      var ol = [];
+      while (i < lines.length && /^\s*\d+[.、)]\s+/.test(lines[i])) {
+        ol.push(lines[i].replace(/^\s*\d+[.、)]\s+/, '')); i++;
+      }
+      html += '<ol>' + ol.map(function (it) { return '<li>' + mdInline(it) + '</li>'; }).join('') + '</ol>';
+      continue;
+    }
+
+    // 普通段落
+    para.push(trimmed);
+    i++;
+  }
+  flushPara();
+  return html;
+}
 
 function addMessage(role, text) {
   const div = document.createElement('div');
@@ -669,7 +802,7 @@ function addMessage(role, text) {
 
   const bubble = document.createElement('div');
   bubble.className = 'msg-bubble';
-  bubble.innerHTML = toHtml(text);
+  bubble.innerHTML = renderMarkdown(text);
 
   div.appendChild(avatar);
   div.appendChild(bubble);
@@ -739,19 +872,18 @@ async function sendMessage() {
   try {
     const full = await callQwenStream(text, (partial) => {
       if (!bubble) { removeTyping(); bubble = addMessage('assistant', ''); }
-      bubble.innerHTML = toHtml(cleanMarkdown(partial));
+      bubble.innerHTML = renderMarkdown(partial);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     });
 
-    const reply = cleanMarkdown(full);
     if (!bubble) {                    // 没有任何内容流回
       removeTyping();
-      addMessage('assistant', reply || '（这次没有返回内容，请重试。）');
+      addMessage('assistant', full || '（这次没有返回内容，请重试。）');
     } else {
-      bubble.innerHTML = toHtml(reply);
+      bubble.innerHTML = renderMarkdown(full);
     }
-    history.push({ role: 'user',      content: text  });
-    history.push({ role: 'assistant', content: reply });
+    history.push({ role: 'user',      content: text });
+    history.push({ role: 'assistant', content: full });
   } catch (e) {
     removeTyping();
     if (bubble) bubble.parentElement.remove();
@@ -799,10 +931,10 @@ async function handleKeySubmit() {
 
     renderSlots();
     addMessage('assistant',
-      '你好！我是你的高考志愿填报顾问。\n\n' +
-      '先简单说说情况吧：哪个省、多少分或省排名（位次）、选的什么科、大概想学什么方向、有没有偏好的城市？\n\n' +
-      '说一句——地域我只当成偏好，不是硬条件。如果你心仪的城市里好学校好专业够不着，我会先在那边给现实的方案，再帮你看看同样的分去别的城市能上的更好的名校，最后你自己权衡。\n\n' +
-      '（录取数据我会尽量联网查最新的，但填报前请以官方渠道为准。）'
+      '你好，我是你的高考志愿填报顾问。\n\n' +
+      '先简单说说情况：哪个省、哪一年高考、多少分或省排名（位次）、选的什么科、大概想学什么方向、有没有偏好的城市？\n\n' +
+      '我会先不限地域，按你的位次告诉你"这个位次大概能上哪些学校和专业组"，再回到你心仪的城市看哪些够得着、哪些够不着，最后把取舍摊开让你自己拍板——地域我只当偏好，不是硬门槛。\n\n' +
+      '往年位次和分数我以夸克高考的数据为准、尽量联网核对；正式填报前请再去省考试院 / 阳光高考 / 各校招生网确认。'
     );
     inputBox.focus();
 
