@@ -47,15 +47,16 @@
   .header-info { flex: 1; }
   .header-title { font-size: 15px; font-weight: 600; color: #fff; }
   .header-sub { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 2px; }
-  .reset-btn {
+  .header-btns { display: flex; gap: 6px; }
+  .h-btn {
     background: rgba(255,255,255,0.15);
     border: none; border-radius: 8px;
     color: #fff; font-size: 12px;
     padding: 5px 10px; cursor: pointer;
-    display: none;
     transition: background 0.15s;
+    white-space: nowrap;
   }
-  .reset-btn:hover { background: rgba(255,255,255,0.25); }
+  .h-btn:hover { background: rgba(255,255,255,0.25); }
 
   /* ── Slot bar ── */
   .slot-bar {
@@ -82,115 +83,85 @@
     font-weight: 500;
   }
 
-  /* ── Key screen ── */
-  #keyScreen {
-    flex: 1;
-    display: flex;
-    overflow-y: auto;
-    padding: 24px;
-    background: #fafbfc;
-  }
-  #keyScreen::-webkit-scrollbar { width: 5px; }
-  #keyScreen::-webkit-scrollbar-thumb { background: #d0d8e8; border-radius: 3px; }
-  .key-card {
-    width: 100%; max-width: 420px;
-    margin: auto;                 /* 居中且内容超高时可滚动 */
-    background: #fff;
-    border: 1px solid #edf0f5;
-    border-radius: 14px;
-    padding: 26px 24px;
-    display: flex; flex-direction: column; gap: 14px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  }
-
-  /* ── 获取 Key 引导 ── */
-  .key-guide {
-    border: 1px solid #e3e9f3;
-    border-radius: 10px;
-    background: #fafbff;
-  }
-  .key-guide > summary {
-    list-style: none;
-    cursor: pointer;
-    padding: 11px 14px;
-    font-size: 13px; font-weight: 600; color: #1a3a6b;
-    display: flex; align-items: center; gap: 7px;
-    user-select: none;
-  }
-  .key-guide > summary::-webkit-details-marker { display: none; }
-  .key-guide > summary::before {
-    content: '▸'; font-size: 11px; color: #1a3a6b;
-    transition: transform 0.18s;
-  }
-  .key-guide[open] > summary::before { transform: rotate(90deg); }
-  .key-guide-body { padding: 2px 14px 14px; }
-  .key-callout {
-    background: #eef4ff; border: 1px solid #d6e2f7;
-    border-radius: 8px; padding: 9px 11px;
-    font-size: 12px; line-height: 1.65;
-    color: #2c4a78; margin-bottom: 12px;
-  }
-  .key-steps { display: flex; flex-direction: column; gap: 11px; }
-  .key-step {
-    display: flex; gap: 9px;
-    font-size: 12.5px; line-height: 1.6; color: #5a6478;
-  }
-  .key-step::before {
-    counter-increment: keystep; content: counter(keystep);
-    flex-shrink: 0;
-    width: 18px; height: 18px; margin-top: 1px;
-    border-radius: 50%; background: #1a3a6b; color: #fff;
-    font-size: 11px; font-weight: 600;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .key-steps { counter-reset: keystep; }
-  .key-guide a { color: #1a3a6b; font-weight: 500; text-decoration: none; }
-  .key-guide a:hover { text-decoration: underline; }
-  .key-secure {
-    margin-top: 12px; padding-top: 10px;
-    border-top: 1px dashed #dde3ee;
-    font-size: 11.5px; color: #8a93a6; line-height: 1.6;
-  }
-  .key-card-title { font-size: 16px; font-weight: 600; color: #1a2740; }
-  .key-card-desc { font-size: 13px; color: #6b7689; line-height: 1.65; }
-  .key-input {
-    width: 100%; padding: 10px 14px;
-    border: 1px solid #dde3ee;
-    border-radius: 10px;
-    font-size: 13px; font-family: inherit;
-    color: #1a2740; outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .key-input:focus {
-    border-color: #1a3a6b;
-    box-shadow: 0 0 0 3px rgba(26,58,107,0.10);
-  }
-  .key-btn {
-    padding: 11px;
-    border-radius: 10px;
-    background: #1a3a6b;
-    color: #fff; border: none;
-    font-size: 14px; font-family: inherit;
-    font-weight: 500; cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .key-btn:hover:not(:disabled) { opacity: 0.88; }
-  .key-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .key-err { font-size: 12px; color: #c0392b; margin-top: -6px; display: none; line-height: 1.5; }
-  .key-hint {
-    font-size: 11px; color: #aab0c0;
-    text-align: center; line-height: 1.6;
-  }
-  .key-hint a { color: #1a3a6b; text-decoration: none; }
-  .key-hint a:hover { text-decoration: underline; }
-
   /* ── Chat screen ── */
   #chatScreen {
     flex: 1;
-    display: none;
+    display: flex;
     flex-direction: column;
     overflow: hidden;
   }
+
+  /* ── 一键填报表单 ── */
+  #quickForm {
+    flex-shrink: 0;
+    max-height: 58vh;
+    overflow-y: auto;
+    border-bottom: 1px solid #edf0f5;
+    background: #fbfcfe;
+    padding: 16px 18px 18px;
+  }
+  #quickForm::-webkit-scrollbar { width: 5px; }
+  #quickForm::-webkit-scrollbar-thumb { background: #d0d8e8; border-radius: 3px; }
+  .qf-title { font-size: 15px; font-weight: 700; color: #14264a; }
+  .qf-sub { font-size: 12px; color: #6b7689; margin-top: 3px; line-height: 1.6; }
+  .qf-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-top: 14px;
+  }
+  .qf-field { display: flex; flex-direction: column; gap: 5px; }
+  .qf-label { font-size: 12px; font-weight: 600; color: #44506a; }
+  .qf-label .opt { font-weight: 400; color: #aab0c0; }
+  .qf-input, .qf-select {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid #dde3ee;
+    border-radius: 9px;
+    font-size: 13.5px; font-family: inherit;
+    color: #1a2740; background: #fff; outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .qf-select { cursor: pointer; }
+  .qf-input:focus, .qf-select:focus {
+    border-color: #1a3a6b;
+    box-shadow: 0 0 0 3px rgba(26,58,107,0.10);
+  }
+  .qf-block { margin-top: 14px; }
+  .qf-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 7px;
+  }
+  .chip {
+    font-size: 12.5px;
+    padding: 5px 11px;
+    border-radius: 18px;
+    border: 1px solid #dde3ee;
+    background: #fff; color: #5a6478;
+    cursor: pointer; user-select: none;
+    transition: all 0.15s;
+  }
+  .chip:hover { border-color: #b3c3e0; }
+  .chip.active {
+    background: #1a3a6b; color: #fff; border-color: #1a3a6b; font-weight: 500;
+  }
+  .qf-err {
+    font-size: 12px; color: #c0392b; margin-top: 12px;
+    display: none; line-height: 1.5;
+  }
+  .qf-actions {
+    display: flex; align-items: center; gap: 12px;
+    margin-top: 16px; flex-wrap: wrap;
+  }
+  .qf-submit {
+    padding: 10px 22px;
+    border-radius: 10px;
+    background: #1a3a6b; color: #fff; border: none;
+    font-size: 14px; font-family: inherit; font-weight: 600;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .qf-submit:hover:not(:disabled) { opacity: 0.88; }
+  .qf-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .qf-tip { font-size: 11.5px; color: #aab0c0; line-height: 1.5; }
+
   .messages {
     flex: 1; overflow-y: auto;
     padding: 16px;
@@ -231,6 +202,16 @@
     color: #fff;
     border-bottom-right-radius: 4px;
   }
+
+  /* 联网来源 */
+  .sources {
+    margin-top: 10px; padding-top: 9px;
+    border-top: 1px dashed #dde3ee;
+    font-size: 11.5px; color: #8a93a6;
+  }
+  .sources-title { font-weight: 600; color: #6b7689; margin-bottom: 4px; }
+  .sources a { color: #1a3a6b; text-decoration: none; display: block; margin: 2px 0; }
+  .sources a:hover { text-decoration: underline; }
 
   /* typing indicator */
   .msg-bubble.typing { display: flex; align-items: center; }
@@ -357,9 +338,12 @@
     background: #eef4ff; color: #1a3a6b; font-weight: 600; white-space: nowrap;
   }
   .msg-bubble tbody tr:nth-child(even) { background: #fafbfd; }
-  /* 第 1 列“梯队”窄一些，第 2 列“院校”加粗高亮、不换行，一眼能看到学校 */
   .msg-bubble td:first-child { white-space: nowrap; text-align: center; }
   .msg-bubble td:nth-child(2) { font-weight: 700; color: #14264a; white-space: nowrap; }
+
+  @media (max-width: 480px) {
+    .qf-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -370,55 +354,11 @@
     <div class="header-icon">考</div>
     <div class="header-info">
       <div class="header-title">高考志愿顾问</div>
-      <div class="header-sub">通义千问驱动 · 位次/分数以夸克高考为参照</div>
+      <div class="header-sub">DeepSeek 驱动 · 位次/分数以百度高考为参照</div>
     </div>
-    <button class="reset-btn" id="resetBtn">重置对话</button>
-  </div>
-
-  <!-- API Key 输入页 -->
-  <div id="keyScreen">
-    <div class="key-card">
-      <div class="key-card-title">输入阿里云百炼 API Key</div>
-      <div class="key-card-desc">
-        本工具用你自己的 API Key 调用通义千问，并使用百炼自带的联网搜索查最新数据。
-        Key 只在本次会话的浏览器内存里用，不会被保存、记录或上传到任何服务器，刷新页面即清除。
-      </div>
-
-      <details class="key-guide" open>
-        <summary>如何免费获取 API Key？第一次用看这里</summary>
-        <div class="key-guide-body">
-          <div class="key-callout">
-            💡 阿里云百炼对新用户免费：每个文本模型送 100 万 token，有效期 90 天，个人用够很久。用完会自动转按量付费，可在控制台开启「免费额度用完即停」避免超额扣费。
-          </div>
-          <div class="key-steps">
-            <div class="key-step">注册并登录阿里云账号，完成实名认证。</div>
-            <div class="key-step">
-              开通服务：打开
-              <a href="https://www.aliyun.com/product/bailian" target="_blank" rel="noopener">百炼产品页</a>，
-              点「免费体验 / 立即开通」，同意协议，把「百炼平台」和「大模型服务」都开通。模型服务没开通时，创建 Key 的按钮是灰的。
-            </div>
-            <div class="key-step">
-              进入
-              <a href="https://bailian.console.aliyun.com/" target="_blank" rel="noopener">百炼控制台</a>，
-              右上角地域选「华北2（北京）」，左侧菜单找到 API-Key，点「创建 API-Key」，业务空间选默认、权限选全部，确定。
-            </div>
-            <div class="key-step">
-              弹窗会显示完整的 Key（sk- 开头），马上复制——关闭后就看不到明文了，丢了只能重置或新建。把它粘到下面的输入框即可。
-            </div>
-          </div>
-          <div class="key-secure">
-            🔒 Key 等于你的账号调用权限，别发给别人、别提交到代码仓库或截图外传。本页只在你的浏览器内存里临时使用它，不会保存或上传。
-          </div>
-        </div>
-      </details>
-
-      <input class="key-input" id="keyInput" type="password"
-        placeholder="sk-xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
-      <div class="key-err" id="keyErr"></div>
-      <button class="key-btn" id="keyBtn">开始咨询</button>
-      <div class="key-hint">
-        没有 Key？展开上方「如何免费获取 API Key」按步骤操作即可
-      </div>
+    <div class="header-btns">
+      <button class="h-btn" id="formBtn">填报信息</button>
+      <button class="h-btn" id="resetBtn">重置</button>
     </div>
   </div>
 
@@ -426,8 +366,52 @@
   <div id="chatScreen">
     <!-- 槽位状态栏 -->
     <div class="slot-bar" id="slotBar"></div>
+
+    <!-- 一键填报表单 -->
+    <div id="quickForm">
+      <div class="qf-title">一键生成志愿推荐</div>
+      <div class="qf-sub">点几下填好下面的信息，不用自己想怎么提问。也可以直接在最下方输入框里随便聊。</div>
+
+      <div class="qf-grid">
+        <div class="qf-field">
+          <label class="qf-label" for="qfYear">高考年份</label>
+          <select class="qf-select" id="qfYear"></select>
+        </div>
+        <div class="qf-field">
+          <label class="qf-label" for="qfProvince">你所在的省份</label>
+          <select class="qf-select" id="qfProvince"></select>
+        </div>
+        <div class="qf-field">
+          <label class="qf-label" for="qfRank">位次（全省排名）</label>
+          <input class="qf-input" id="qfRank" type="number" inputmode="numeric" min="1" placeholder="例如 12000" />
+        </div>
+        <div class="qf-field">
+          <label class="qf-label" for="qfSubject">选科 <span class="opt">选填</span></label>
+          <select class="qf-select" id="qfSubject"></select>
+        </div>
+      </div>
+
+      <div class="qf-block">
+        <div class="qf-label">想去的省份 / 城市 <span class="opt">可多选，留空表示先不限地域</span></div>
+        <div class="qf-chips" id="qfRegionChips"></div>
+      </div>
+
+      <div class="qf-block">
+        <div class="qf-label">想读的专业方向 <span class="opt">可多选，留空表示让我推荐</span></div>
+        <div class="qf-chips" id="qfMajorChips"></div>
+      </div>
+
+      <div class="qf-err" id="qfErr"></div>
+
+      <div class="qf-actions">
+        <button class="qf-submit" id="qfSubmit">生成志愿推荐</button>
+        <span class="qf-tip">参照 <b>上一年</b>录取数据 · 以百度高考为准</span>
+      </div>
+    </div>
+
     <!-- 消息区 -->
     <div class="messages" id="messages"></div>
+
     <!-- 输入区 -->
     <div class="composer">
       <div class="tool-row">
@@ -437,13 +421,13 @@
           <span class="ws-label">联网搜索</span>
         </label>
         <select id="modelSelect" class="model-select" aria-label="选择模型">
-          <option value="qwen-plus">通义千问 Plus · 均衡</option>
-          <option value="qwen-max">通义千问 Max · 更强</option>
+          <option value="v3">DeepSeek V3 · 快</option>
+          <option value="r1">DeepSeek R1 · 深度思考</option>
         </select>
       </div>
       <div class="input-row">
         <textarea class="input-box" id="inputBox" rows="1"
-          placeholder="说说你的情况，例如：浙江考生，位次约1.2万，物化生，想读计算机，偏好上海杭州……"></textarea>
+          placeholder="也可以直接说，例如：浙江考生，位次约1.2万，物化生，想读计算机，偏好上海杭州……"></textarea>
         <button class="send-btn" id="sendBtn" aria-label="发送">
           <svg viewBox="0 0 24 24">
             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -451,12 +435,65 @@
           </svg>
         </button>
       </div>
-      <div class="disclaimer">往年位次/分数以夸克高考为参照，分数线、招生计划最终以省考试院 / 阳光高考 / 各校招生网为准</div>
+      <div class="disclaimer">往年位次/分数以百度高考为参照，分数线、招生计划最终以省考试院 / 阳光高考 / 各校招生网为准</div>
     </div>
   </div>
 </div>
 
 <script>
+// ════════════════════════════════════════════════════════════════
+//  配置区：要改的东西都在这里
+// ════════════════════════════════════════════════════════════════
+// 通过同域的 Vercel 函数代理来调用 —— 网页和代理同一个域名，浏览器视为同源，
+// 跨域(CORS)问题直接消失；学弟学妹只要能打开你这个 Vercel 域名即可（不用翻墙）。
+// 这里用相对路径就行，无需写完整域名（部署见 api/ark.js 和说明）。
+const ARK_BASE = '/api/ark';
+
+const CONFIG = {
+  // Key 放在 Vercel 环境变量 ARK_API_KEY 里（服务端），网页不需要、也看不到。
+  API_KEY: '',
+
+  // 普通对话（不联网）
+  CHAT_URL: ARK_BASE + '?to=chat',
+  // 联网搜索（走 BytePlus 的 bot 接口）
+  BOT_URL:  ARK_BASE + '?to=bot',
+
+  // 不联网时用的模型，填你在 BytePlus「Online Inference」建的接入点 ID（ep-xxx）。
+  // 这一个接入点对应你建它时选的那个 DeepSeek 模型，所以下面 v3/r1 两项目前
+  // 都指向它（点哪个都一样）。想让下拉真正区分，就再建一个接入点分别填。
+  MODELS: {
+    v3: 'ep-20260619201937-h9sqr',
+    r1: 'ep-20260619201937-h9sqr',
+  },
+
+  // 联网搜索用的 App/Bot ID（bot-xxxxxxxx）。
+  // 在 BytePlus 控制台「AI App Lab → Create App」建一个带联网搜索的应用，拿到 bot-xxx 填这里。
+  // 留空：联网开关会自动退化为“不联网”，并在回答里提示。
+  BOT_ID: '',
+};
+
+// ── 数据：省份 / 专业 / 选科 ───────────────────────────
+const PROVINCES = [
+  '北京','天津','上海','重庆','河北','山西','辽宁','吉林','黑龙江',
+  '江苏','浙江','安徽','福建','江西','山东','河南','湖北','湖南',
+  '广东','海南','四川','贵州','云南','陕西','甘肃','青海',
+  '内蒙古','广西','西藏','宁夏','新疆',
+];
+
+const MAJORS = [
+  '计算机/软件','人工智能','电子信息','通信工程','自动化','电气工程',
+  '机械工程','土木工程','建筑学','临床医学','口腔医学','药学','护理','中医学',
+  '法学','金融学','经济学','会计学','工商管理','师范/教育','汉语言文学',
+  '英语/外语','新闻传播','心理学','数学','物理学','化学','生物科学','设计学','农学',
+];
+
+const SUBJECTS = [
+  '物理类（新高考）','历史类（新高考）',
+  '物化生','物化地','物化政','物生政','物生地','物地政',
+  '史政地','史政生','史地生',
+  '理科（旧高考）','文科（旧高考）','还没确定',
+];
+
 // ── 槽位定义 ──────────────────────────────────────────
 const SLOTS_DEF = [
   { key: 'province',    label: '省份' },
@@ -472,27 +509,72 @@ const SLOTS_DEF = [
 let slots = {};
 SLOTS_DEF.forEach(s => { slots[s.key] = { filled: false, value: '' }; });
 
-let apiKey  = '';
+let apiKey  = CONFIG.API_KEY;
 let history = [];   // [{role, content}, ...]
 let loading = false;
 
-const ENDPOINT = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
-// 联网搜索锚定的权威站点：夸克高考（往年位次/分数以此为准，过滤自媒体/论坛等被污染来源）
-const SEARCH_SITES = ['gaokao.quark.cn'];
-
 // ── DOM 引用 ──────────────────────────────────────────
-const keyScreen   = document.getElementById('keyScreen');
 const chatScreen  = document.getElementById('chatScreen');
-const keyInput    = document.getElementById('keyInput');
-const keyBtn      = document.getElementById('keyBtn');
-const keyErr      = document.getElementById('keyErr');
-const messagesEl  = document.getElementById('messages');
-const inputBox    = document.getElementById('inputBox');
-const sendBtn     = document.getElementById('sendBtn');
-const slotBar     = document.getElementById('slotBar');
-const resetBtn    = document.getElementById('resetBtn');
-const wsToggle    = document.getElementById('wsToggle');
-const modelSelect = document.getElementById('modelSelect');
+const messagesEl   = document.getElementById('messages');
+const inputBox     = document.getElementById('inputBox');
+const sendBtn      = document.getElementById('sendBtn');
+const slotBar      = document.getElementById('slotBar');
+const resetBtn     = document.getElementById('resetBtn');
+const formBtn      = document.getElementById('formBtn');
+const wsToggle     = document.getElementById('wsToggle');
+const modelSelect  = document.getElementById('modelSelect');
+
+const quickForm    = document.getElementById('quickForm');
+const qfYear       = document.getElementById('qfYear');
+const qfProvince   = document.getElementById('qfProvince');
+const qfRank       = document.getElementById('qfRank');
+const qfSubject    = document.getElementById('qfSubject');
+const qfRegionChips= document.getElementById('qfRegionChips');
+const qfMajorChips = document.getElementById('qfMajorChips');
+const qfErr        = document.getElementById('qfErr');
+const qfSubmit     = document.getElementById('qfSubmit');
+
+// ── 填充表单选项 ──────────────────────────────────────
+(function initForm() {
+  const thisYear = new Date().getFullYear();
+  for (let y = thisYear; y >= thisYear - 3; y--) {
+    const o = document.createElement('option');
+    o.value = String(y); o.textContent = y + ' 年';
+    qfYear.appendChild(o);
+  }
+
+  const ph = document.createElement('option');
+  ph.value = ''; ph.textContent = '请选择'; ph.disabled = true; ph.selected = true;
+  qfProvince.appendChild(ph);
+  PROVINCES.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p; o.textContent = p;
+    qfProvince.appendChild(o);
+  });
+
+  const phs = document.createElement('option');
+  phs.value = ''; phs.textContent = '（选填）请选择';
+  qfSubject.appendChild(phs);
+  SUBJECTS.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s; o.textContent = s;
+    qfSubject.appendChild(o);
+  });
+
+  PROVINCES.forEach(p => qfRegionChips.appendChild(makeChip(p)));
+  MAJORS.forEach(m => qfMajorChips.appendChild(makeChip(m)));
+})();
+
+function makeChip(text) {
+  const c = document.createElement('div');
+  c.className = 'chip';
+  c.textContent = text;
+  c.addEventListener('click', () => c.classList.toggle('active'));
+  return c;
+}
+function selectedChips(container) {
+  return Array.from(container.querySelectorAll('.chip.active')).map(c => c.textContent);
+}
 
 // ── 槽位渲染 ──────────────────────────────────────────
 function renderSlots() {
@@ -505,30 +587,21 @@ function renderSlots() {
   });
 }
 
-// ── 从用户消息自动提取槽位（仅作展示用，真正的理解由模型完成）──
+// ── 从用户消息自动提取槽位（仅作展示，真正理解交给模型）──
 function extractSlots(msg) {
-  // 省份
-  const provinces = [
-    '北京','天津','上海','重庆','河北','山西','辽宁','吉林','黑龙江',
-    '江苏','浙江','安徽','福建','江西','山东','河南','湖北','湖南',
-    '广东','海南','四川','贵州','云南','陕西','甘肃','青海',
-    '内蒙古','广西','西藏','宁夏','新疆',
-  ];
-  for (const p of provinces) {
+  for (const p of PROVINCES) {
     if (msg.includes(p) && !slots.province.filled) { slots.province = { filled: true, value: p }; }
   }
 
-  // 高考年份（用于把参照数据锁定到“高考当年的前一年”）
   const yearM = msg.match(/(20[12]\d)\s*年?\s*(?:高考|考生|届|应届|入学)/)
              || msg.match(/(?:我是|考生是?|高考)\s*(20[12]\d)/)
              || msg.match(/(20[12]\d)\s*届/);
   if (yearM && !slots.gaokao_year.filled) {
     slots.gaokao_year = { filled: true, value: yearM[1] + '年' };
   } else if (!slots.gaokao_year.filled && /今年高考|今年的?考生|今年参加高考/.test(msg)) {
-    slots.gaokao_year = { filled: true, value: '2026年' };
+    slots.gaokao_year = { filled: true, value: new Date().getFullYear() + '年' };
   }
 
-  // 分数 / 位次 / 分差
   const scoreM = msg.match(/(\d{3})\s*分/);
   const rankM  = msg.match(/(\d{3,7})\s*[位名]/);
   const overM  = msg.match(/(?:超|高出|超出|压)(?:一本|特控|控制|本科)?线?\s*(\d{1,3})\s*分?/);
@@ -542,7 +615,6 @@ function extractSlots(msg) {
   if (overM)  pushScore('超线' + overM[1] + '分');
   if (diffM)  pushScore('分差' + diffM[1]);
 
-  // 选科
   const subjs = ['物化生','物化地','物化政','物生政','物生地','物地政',
                  '史政地','史政生','史地生','史政化','物理','历史',
                  '理科','文科','生物','地理','政治','化学'];
@@ -550,7 +622,6 @@ function extractSlots(msg) {
     if (msg.includes(s) && !slots.subject.filled) { slots.subject = { filled: true, value: s }; break; }
   }
 
-  // 地域偏好（允许多个，累加）
   const regions = ['长三角','珠三角','京津冀','江浙沪','华东','华南','华中','西南','东北','北方','南方',
                    '北京','上海','广州','深圳','杭州','南京','苏州','宁波','武汉','成都','重庆','西安',
                    '天津','长沙','合肥','济南','青岛','厦门','大连','哈尔滨','省内','本省','离家近'];
@@ -561,20 +632,17 @@ function extractSlots(msg) {
     slots.region = { filled: true, value: merged.join('、') };
   }
 
-  // 家庭资源
   const fws = ['电力','电网','铁路','医生','医院','教师','老师','做生意',
                '公务员','体制内','烟草','石油','银行','军队','普通家庭','没资源','没背景'];
   for (const fw of fws) {
     if (msg.includes(fw) && !slots.family.filled) { slots.family = { filled: true, value: fw }; break; }
   }
 
-  // 核心诉求
   const goals = ['就业','考公','考编','考研','保研','稳定','高薪','赚钱','深造','出国','留学','创业'];
   for (const g of goals) {
     if (msg.includes(g) && !slots.goal.filled) { slots.goal = { filled: true, value: g }; break; }
   }
 
-  // 专业偏好
   const interests = ['计算机','软件','人工智能','电子','通信','自动化','机械','土木','建筑',
                      '临床','口腔','医学','药学','护理','法学','法律','金融','经济','会计','商科',
                      '师范','汉语言','外语','英语','新闻','传播','心理','设计','理工','文史'];
@@ -586,9 +654,9 @@ function extractSlots(msg) {
 // ── 系统 prompt ───────────────────────────────────────
 const BASE_SYSTEM = `你是一名经验丰富、说话直爽、接地气的高考志愿填报顾问。你像一个懂行的朋友，帮考生和家长把志愿想清楚，而不是甩官话套话。
 
-【数据来源：以夸克高考为准，严防信息污染】
-- 涉及往年录取位次、分数、招生计划、专业组/试验班设置时，一律以"夸克高考"（gaokao.quark.cn）的数据为准。联网搜索时优先在该站点内核对，搜索词带上"夸克高考"。
-- 严防信息污染：自媒体公众号、贴吧论坛、培训机构软文、问答平台、各类"志愿规划"营销文里的位次/分数/试验班名称经常是错的甚至编的，一律不采信。只要和夸克高考对不上，就以夸克高考为准；夸克高考查不到的，宁可说"查不到、请去官方核对"，也绝不拿来路不明的数字硬填。
+【数据来源：以百度高考为准，严防信息污染】
+- 涉及往年录取位次、分数、招生计划、专业组/试验班设置时，一律以"百度高考"（gaokao.baidu.com）的数据为准。联网搜索时优先核对该来源，搜索词带上"百度高考"和"〔高考年份减1〕年〔省份〕大学专业/录取位次"。
+- 严防信息污染：自媒体公众号、贴吧论坛、培训机构软文、问答平台、各类"志愿规划"营销文里的位次/分数/试验班名称经常是错的甚至编的，一律不采信。只要和百度高考对不上，就以百度高考为准；百度高考查不到的，宁可说"查不到、请去官方核对"，也绝不拿来路不明的数字硬填。
 - 没把握的院校代码、专业组名称、招生口径，宁缺毋滥，绝不为了显得"具体"而编造班名、代码或位次。
 
 【年份：参照数据锚定"高考当年的前一年"】
@@ -599,7 +667,7 @@ const BASE_SYSTEM = `你是一名经验丰富、说话直爽、接地气的高�
 【填报常识】
 - 位次比分数更可靠：分数线随题目难度浮动，省排名（位次）才是稳定参照。优先用位次，其次看分数、分差（分数减去一本线/特殊类型控制线）。
 - 按"冲、稳、保"三档展开，每档给 2—3 个具体选择，落到院校 + 招生专业组/试验班，不要只报校名。
-- 很多顶尖高校按"专业大类 / 试验班 / 院校专业组"招生（如"工科试验班""理科试验班"），里面含若干专业、入学后再分流；新高考省份（如重庆、浙江、上海）按"院校专业组"投档，每个组有独立录取位次。所以同一所学校不同试验班/专业组，位次能差很远，必须分开谈，不能用"全校大概多少位"糊弄。
+- 很多顶尖高校按"专业大类 / 试验班 / 院校专业组"招生（如"工科试验班""理科试验班"），里面含若干专业、入学后再分流；新高考省份按"院校专业组"投档，每个组有独立录取位次。所以同一所学校不同试验班/专业组，位次能差很远，必须分开谈，不能用"全校大概多少位"糊弄。
 - 冲/稳/保按位次对齐：用考生位次和"目标专业组前一年的录取位次"比——比考生略靠前（数字略小）、踮脚够得到的算"冲"；大致相当算"稳"；明显靠后（数字大不少）、很有把握的算"保"。某校/专业组前一年位次比考生好很多（数字小很多）的，是基本够不着，绝不能当"能上的更高平台"列进来，名气再大也不行。差几名到几百名可以算冲，差一两千名就是够不着。
 - 别被特殊批次的低分误导：招生表里"最低位次"那行常是国家专项、高校专项、民族班、中外合作或偏远校区，要么需要资格、要么学费很高。默认看"普通批 / 普通类"的录取位次；只有考生明确符合专项/民族资格时才纳入，并把条件和代价（如中外合作学费高）讲清楚。
 
@@ -612,9 +680,9 @@ const BASE_SYSTEM = `你是一名经验丰富、说话直爽、接地气的高�
 
 第三步——把取舍摊开，让考生自己拍板：留在心仪城市（可能牺牲学校层次或专业）／冲更高层次的学校（可能要去外地，且大概率只够边缘冷门专业）／保住好专业（学校名气可能没那么响）。尤其点出"名校的边缘专业 vs 实力校的王牌专业"这个最常见的纠结，给出你的分析，但不替他做决定。
 
-【推荐要具体，但先在夸克高考核实】
+【推荐要具体，但先在百度高考核实】
 考生要的是能照着填的颗粒度，不是"同济的优势专业是土木、交通"这种泛泛而谈。每给一所学校，尽量写出：该校当年在考生所在省份的招生口径（专业大类 / 试验班 / 院校专业组的名称，如"工科试验班（XX类）"）、这个组大致含哪些专业、入学后怎么分流，以及这个具体招生单位（不是整所学校）的参照位次和数据年份，并归到冲/稳/保哪档、说明理由。
-- 报具体班名/专业组/位次前，先在夸克高考核实（搜"XX大学 〔高考年份减1〕 〔省份〕 招生专业 录取位次 夸克高考"），绝不凭记忆。
+- 报具体班名/专业组/位次前，先在百度高考核实（搜"XX大学 〔高考年份减1〕 〔省份〕 招生专业 录取位次 百度高考"），绝不凭记忆。
 - 查到就具体说；查不到或没把握，就如实讲"具体怎么分、对应位次多少，以该校今年在你省的招生计划为准，务必去官方核对"，绝不硬编班名、代码或位次来凑"具体"。
 
 【排版：用 Markdown，让信息一眼能看清】
@@ -635,31 +703,27 @@ function buildSystemMessage() {
   return BASE_SYSTEM + '\n\n【当前已知用户信息】\n' + lines.join('\n');
 }
 
-// ── 调用千问（流式 + 联网搜索）────────────────────────
-async function callQwenStream(userMsg, onDelta) {
+// ── 调用 DeepSeek（流式；联网走 Bot）──────────────────
+async function callDeepSeekStream(userMsg, onDelta) {
   const msgs = [
     { role: 'system', content: buildSystemMessage() },
     ...history.slice(-16),            // 保留最近 8 轮
     { role: 'user', content: userMsg },
   ];
 
+  const useBot = wsToggle.checked && CONFIG.BOT_ID;
+  const url    = useBot ? CONFIG.BOT_URL : CONFIG.CHAT_URL;
+  const model  = useBot ? CONFIG.BOT_ID : (CONFIG.MODELS[modelSelect.value] || CONFIG.MODELS.v3);
+
   const body = {
-    model: modelSelect.value || 'qwen-plus',
+    model: model,
     messages: msgs,
     temperature: 0.6,
     max_tokens: 4096,
     stream: true,
   };
-  // 开启百炼自带联网搜索（OpenAI 兼容协议下作为顶层参数传入）
-  if (wsToggle.checked) {
-    body.enable_search = true;
-    body.search_options = {
-      search_strategy: 'max',
-      assigned_site_list: SEARCH_SITES,   // 优先在夸克高考站内检索；若某天接口报错，删掉本行即可
-    };
-  }
 
-  const resp = await fetch(ENDPOINT, {
+  const resp = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -678,6 +742,19 @@ async function callQwenStream(userMsg, onDelta) {
   const decoder = new TextDecoder('utf-8');
   let buffer = '';
   let full   = '';
+  const refs = [];           // 联网来源
+  const seen = new Set();
+
+  function collectRefs(arr) {
+    if (!Array.isArray(arr)) return;
+    arr.forEach(r => {
+      const u = r && (r.url || r.link || r.web_url);
+      if (u && !seen.has(u)) {
+        seen.add(u);
+        refs.push({ url: u, title: r.title || r.site_name || r.name || u });
+      }
+    });
+  }
 
   while (true) {
     const { done, value } = await reader.read();
@@ -694,10 +771,14 @@ async function callQwenStream(userMsg, onDelta) {
         const json  = JSON.parse(data);
         const delta = json.choices?.[0]?.delta?.content || '';
         if (delta) { full += delta; onDelta(full); }
+        // 火山 Bot 联网来源（不同版本字段位置可能不同，尽量都兜住）
+        collectRefs(json.references);
+        collectRefs(json.choices?.[0]?.delta?.references);
+        collectRefs(json.choices?.[0]?.message?.references);
       } catch (_) { /* 跳过无法解析的分片 */ }
     }
   }
-  return full;
+  return { full, refs };
 }
 
 // ── HTML 转义 ─────────────────────────────────────────
@@ -729,30 +810,26 @@ function renderMarkdown(src) {
 
     if (trimmed === '') { flushPara(); i++; continue; }
 
-    // 代码围栏（本场景不用代码块）——直接丢弃栏行，让里面的表格照常解析
     if (/^```/.test(trimmed)) { flushPara(); i++; continue; }
 
-    // 分隔线 --- *** ___
     if (/^([-*_])\1{2,}$/.test(trimmed.replace(/\s+/g, ''))) { flushPara(); html += '<hr>'; i++; continue; }
 
-    // 标题 #..######
     var h = trimmed.match(/^(#{1,6})\s+(.*)$/);
     if (h) { flushPara(); html += '<h3>' + mdInline(h[2]) + '</h3>'; i++; continue; }
 
-    // 表格：当前行含 | 且下一行是分隔行 |---|---|
     if (trimmed.indexOf('|') !== -1 && i + 1 < lines.length &&
         /^\s*\|?[\s:|-]*-[-\s:|]*\|?\s*$/.test(lines[i + 1]) && lines[i + 1].indexOf('-') !== -1) {
       flushPara();
       var header = splitRow(trimmed);
       i += 2;
-      var body = [];
+      var bodyRows = [];
       while (i < lines.length && lines[i].indexOf('|') !== -1 && lines[i].trim() !== '') {
-        body.push(splitRow(lines[i])); i++;
+        bodyRows.push(splitRow(lines[i])); i++;
       }
       var tb = '<div class="md-table-wrap"><table><thead><tr>';
       header.forEach(function (c) { tb += '<th>' + mdInline(c) + '</th>'; });
       tb += '</tr></thead><tbody>';
-      body.forEach(function (r) {
+      bodyRows.forEach(function (r) {
         tb += '<tr>';
         for (var k = 0; k < header.length; k++) { tb += '<td>' + mdInline(r[k] || '') + '</td>'; }
         tb += '</tr>';
@@ -762,7 +839,6 @@ function renderMarkdown(src) {
       continue;
     }
 
-    // 无序列表 - * •
     if (/^\s*[-*•]\s+/.test(line)) {
       flushPara();
       var ul = [];
@@ -773,7 +849,6 @@ function renderMarkdown(src) {
       continue;
     }
 
-    // 有序列表 1. 1、 1)
     if (/^\s*\d+[.、)]\s+/.test(line)) {
       flushPara();
       var ol = [];
@@ -784,7 +859,6 @@ function renderMarkdown(src) {
       continue;
     }
 
-    // 普通段落
     para.push(trimmed);
     i++;
   }
@@ -809,6 +883,20 @@ function addMessage(role, text) {
   messagesEl.appendChild(div);
   messagesEl.scrollTop = messagesEl.scrollHeight;
   return bubble;
+}
+
+function appendSources(bubble, refs) {
+  if (!bubble || !refs || !refs.length) return;
+  const box = document.createElement('div');
+  box.className = 'sources';
+  let h = '<div class="sources-title">联网来源（' + refs.length + '）</div>';
+  refs.slice(0, 8).forEach(function (r, idx) {
+    h += '<a href="' + escapeHtml(r.url) + '" target="_blank" rel="noopener">' +
+         (idx + 1) + '. ' + escapeHtml(r.title) + '</a>';
+  });
+  box.innerHTML = h;
+  bubble.appendChild(box);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
 function addTyping(label) {
@@ -838,50 +926,66 @@ function removeTyping() {
 function friendlyError(e) {
   const msg = (e && e.message) ? e.message : String(e);
   if (e instanceof TypeError || /Failed to fetch|NetworkError|load failed/i.test(msg)) {
-    return '请求没发出去，浏览器多半是因为跨域（CORS）把它拦了。\n\n' +
-           '直接双击打开本地 HTML 文件（file:// 方式）时，阿里云接口通常会拒绝这种跨域请求。可行的办法：\n' +
-           '1）把页面放到你自己的服务器 / 后端上，由后端去转发这个请求；\n' +
-           '2）或在本地起一个带转发功能的小服务，由它代为调用接口。\n\n' +
-           '这是浏览器的安全限制，跟 Key 本身无关。';
+    return '请求没发出去。现在走的是同域的 Vercel 函数代理，正常不该有跨域问题，所以多半是：\n\n' +
+           '1）api/ark.js 这个函数还没部署上去（确认仓库里有 /api/ark.js 且 Vercel 已重新部署）；\n' +
+           '2）Vercel 里没设环境变量 ARK_API_KEY（在 Project → Settings → Environment Variables 添加后要重新部署）；\n' +
+           '3）你打开的是本地文件而不是 Vercel 域名（本地没有 /api 函数，必须用线上域名访问）。\n\n' +
+           '都对的话刷新重试。';
   }
-  if (/40[13]|invalid.*key|api[_-]?key|unauthor|access denied/i.test(msg)) {
-    return '接口返回鉴权失败：' + msg + '\n\n请确认 API Key 正确、已开通对应模型服务，且账户有可用额度。';
+  if (/40[13]|invalid.*key|api[_-]?key|unauthor|access denied|authentication/i.test(msg)) {
+    return '接口返回鉴权失败：' + msg + '\n\n请确认 API Key 正确、对应模型已开通、账户有可用额度。';
   }
-  if (/model.*not.*(found|exist)|invalid.*model/i.test(msg)) {
-    return '所选模型不可用：' + msg + '\n换一个模型再试试。';
+  if (/model.*not.*(found|exist)|invalid.*model|未开通|not.*open|endpoint/i.test(msg)) {
+    return '所选模型不可用：' + msg + '\n\n去火山控制台「开通管理」开通该 DeepSeek 模型，' +
+           '或把代码 CONFIG.MODELS 里的模型名改成你接入点的 ep-xxxxxxxx / 最新模型名。';
   }
   return '请求出错：' + msg + '\n稍后重试，或换个模型再试。';
 }
 
 // ── 发送消息 ──────────────────────────────────────────
-async function sendMessage() {
-  const text = inputBox.value.trim();
+async function sendMessage(presetText) {
+  const text = (typeof presetText === 'string' ? presetText : inputBox.value).trim();
   if (!text || loading) return;
 
-  inputBox.value = '';
-  inputBox.style.height = 'auto';
+  if (typeof presetText !== 'string') {
+    inputBox.value = '';
+    inputBox.style.height = 'auto';
+  }
   loading = true;
   sendBtn.disabled = true;
+  qfSubmit.disabled = true;
 
   addMessage('user', text);
   extractSlots(text);
   renderSlots();
-  addTyping(wsToggle.checked ? '正在查阅最新资料…' : '正在思考…');
+
+  const wantSearch = wsToggle.checked;
+  addTyping(wantSearch ? '正在查阅最新资料…' : '正在思考…');
 
   let bubble = null;
   try {
-    const full = await callQwenStream(text, (partial) => {
+    const { full, refs } = await callDeepSeekStream(text, (partial) => {
       if (!bubble) { removeTyping(); bubble = addMessage('assistant', ''); }
       bubble.innerHTML = renderMarkdown(partial);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     });
 
-    if (!bubble) {                    // 没有任何内容流回
+    if (!bubble) {
       removeTyping();
-      addMessage('assistant', full || '（这次没有返回内容，请重试。）');
+      bubble = addMessage('assistant', full || '（这次没有返回内容，请重试。）');
     } else {
       bubble.innerHTML = renderMarkdown(full);
     }
+    appendSources(bubble, refs);
+
+    // 联网开了、但没配 Bot 时给一句温柔提示（只提示一次）
+    if (wantSearch && !CONFIG.BOT_ID && !window.__warnedNoBot) {
+      window.__warnedNoBot = true;
+      addMessage('assistant',
+        '小提示：你打开了「联网搜索」，但还没在代码 CONFIG.BOT_ID 里配置火山的联网 Bot，' +
+        '所以这次其实没有真正联网，位次数据可能不是最新的。配置方法见随附说明。');
+    }
+
     history.push({ role: 'user',      content: text });
     history.push({ role: 'assistant', content: full });
   } catch (e) {
@@ -892,78 +996,80 @@ async function sendMessage() {
 
   loading = false;
   sendBtn.disabled = false;
+  qfSubmit.disabled = false;
   inputBox.focus();
 }
 
-// ── API Key 验证 & 进入聊天 ───────────────────────────
-async function handleKeySubmit() {
-  const key = keyInput.value.trim();
-  if (!key) { showKeyErr('请输入 API Key'); return; }
+// ── 一键填报：组装提示词并发送 ─────────────────────────
+function submitQuickForm() {
+  if (loading) return;
+  const year     = qfYear.value;
+  const province = qfProvince.value;
+  const rank     = qfRank.value.trim();
+  const subject  = qfSubject.value;
+  const regions  = selectedChips(qfRegionChips);
+  const majors   = selectedChips(qfMajorChips);
 
-  keyBtn.disabled = true;
-  keyBtn.textContent = '验证中…';
-  keyErr.style.display = 'none';
+  if (!province) { showFormErr('请先选择你所在的省份'); return; }
+  if (!rank || Number(rank) < 1) { showFormErr('请填写你的全省位次（一个正整数）'); return; }
+  qfErr.style.display = 'none';
 
-  try {
-    // 轻量验证：不开联网、只要 5 个 token
-    const resp = await fetch(ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + key,
-      },
-      body: JSON.stringify({
-        model: 'qwen-plus',
-        messages: [{ role: 'user', content: 'hi' }],
-        max_tokens: 5,
-      }),
-    });
+  // 写入槽位（顶部状态栏会同步显示）
+  slots.province    = { filled: true, value: province };
+  slots.gaokao_year = { filled: true, value: year + '年' };
+  slots.score_rank  = { filled: true, value: '位次' + rank };
+  if (subject)        slots.subject  = { filled: true, value: subject };
+  if (regions.length) slots.region   = { filled: true, value: regions.join('、') };
+  if (majors.length)  slots.interest = { filled: true, value: majors.join('、') };
+  renderSlots();
 
-    if (!resp.ok) {
-      const errData = await resp.json().catch(() => ({}));
-      throw new Error(errData.error?.message || '验证失败，请检查 Key 是否正确');
-    }
+  const prevYear = Number(year) - 1;
+  const subjLine = subject ? `选科${subject}，` : '';
+  const regionLine = regions.length
+    ? `想去的省份/城市：${regions.join('、')}。`
+    : '地域暂时不限，先帮我按位次看全国能上哪些。';
+  const majorLine = majors.length
+    ? `想读的专业方向：${majors.join('、')}。`
+    : '专业方向还没完全想好，请结合我的位次给些建议。';
 
-    apiKey = key;
-    keyScreen.style.display  = 'none';
-    chatScreen.style.display = 'flex';
-    resetBtn.style.display   = '';
+  const prompt =
+`我是${year}年${province}高考考生，${subjLine}全省位次大约${rank}名。
+${regionLine}
+${majorLine}
 
-    renderSlots();
-    addMessage('assistant',
-      '你好，我是你的高考志愿填报顾问。\n\n' +
-      '先简单说说情况：哪个省、哪一年高考、多少分或省排名（位次）、选的什么科、大概想学什么方向、有没有偏好的城市？\n\n' +
-      '我会先不限地域，按你的位次告诉你"这个位次大概能上哪些学校和专业组"，再回到你心仪的城市看哪些够得着、哪些够不着，最后把取舍摊开让你自己拍板——地域我只当偏好，不是硬门槛。\n\n' +
-      '往年位次和分数我以夸克高考的数据为准、尽量联网核对；正式填报前请再去省考试院 / 阳光高考 / 各校招生网确认。'
-    );
-    inputBox.focus();
+请按这个顺序给我志愿建议：先不限地域、用我的位次说清楚大概能上哪些层次的学校和专业组（参照${prevYear}年的录取数据），再把镜头收回到我想去的地方看哪些是冲/稳/保、哪些够不着；最后把取舍摊开让我自己拍板。
+数据请优先参考百度高考（gaokao.baidu.com）里"${prevYear}年${province}大学专业 录取位次"的口径，必要时联网核对，不要采信自媒体或论坛的位次。冲稳保用 Markdown 表格给出。`;
 
-  } catch (e) {
-    showKeyErr(friendlyError(e));
-    keyBtn.disabled = false;
-    keyBtn.textContent = '开始咨询';
-  }
+  hideForm();
+  sendMessage(prompt);
 }
 
-function showKeyErr(msg) {
-  keyErr.textContent   = msg;
-  keyErr.style.display = 'block';
-}
+function showFormErr(msg) { qfErr.textContent = msg; qfErr.style.display = 'block'; }
+function showForm() { quickForm.style.display = 'block'; }
+function hideForm() { quickForm.style.display = 'none'; }
 
 // ── 重置 ──────────────────────────────────────────────
 function resetChat() {
   history = [];
+  window.__warnedNoBot = false;
   SLOTS_DEF.forEach(s => { slots[s.key] = { filled: false, value: '' }; });
   messagesEl.innerHTML = '';
   renderSlots();
-  addMessage('assistant', '已重置对话。重新告诉我你的情况吧！');
+  showForm();
+  welcome();
+}
+
+function welcome() {
+  addMessage('assistant',
+    '你好，我是你的高考志愿填报顾问。\n\n' +
+    '上面的表单点几下填好就行——年份、省份、位次、想去哪、想学啥，我来帮你想怎么填。当然你也可以直接在下面打字跟我聊。\n\n' +
+    '我会先不限地域、按你的位次告诉你"这个位次大概能上哪些学校和专业组"，再回到你心仪的城市看哪些够得着、哪些够不着，最后把取舍摊开让你自己拍板——地域只当偏好，不是硬门槛。\n\n' +
+    '往年位次和分数我以百度高考的数据为准、尽量联网核对；正式填报前请再去省考试院 / 阳光高考 / 各校招生网确认。'
+  );
 }
 
 // ── 事件绑定 ──────────────────────────────────────────
-keyBtn.addEventListener('click', handleKeySubmit);
-keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleKeySubmit(); });
-
-sendBtn.addEventListener('click', sendMessage);
+sendBtn.addEventListener('click', () => sendMessage());
 inputBox.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
@@ -971,8 +1077,14 @@ inputBox.addEventListener('input', function () {
   this.style.height = 'auto';
   this.style.height = Math.min(this.scrollHeight, 120) + 'px';
 });
-
 resetBtn.addEventListener('click', resetChat);
+formBtn.addEventListener('click', showForm);
+qfSubmit.addEventListener('click', submitQuickForm);
+
+// ── 启动 ──────────────────────────────────────────────
+renderSlots();
+welcome();
+inputBox.focus();
 </script>
 </body>
 </html>
